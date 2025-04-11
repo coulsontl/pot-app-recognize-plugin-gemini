@@ -1,71 +1,73 @@
-# Pot-App 文字识别插件模板仓库 (以 [OCR Space](https://ocr.space/) 为例)
+# pot-app.recognize.gemini
 
-### 此仓库为模板仓库，编写插件时可以直接由此仓库创建插件仓库
+<div align="center">
 
-## 插件编写指南
+Gemini文字识别插件 - 基于Google Gemini AI的高质量文字识别服务
 
-### 1. 插件仓库创建
+[![GitHub Release](https://img.shields.io/github/v/release/coulsontl/pot-app-recognize-plugin-gemini)](https://github.com/coulsontl/pot-app-recognize-plugin-gemini/releases)
+[![License](https://img.shields.io/github/license/coulsontl/pot-app-recognize-plugin-gemini)](LICENSE)
 
-- 以此仓库为模板创建一个新的仓库
-- 仓库名为 `pot-app-recognize-plugin-<插件名>`，例如 `pot-app-recognize-plugin-ocrspace`
+</div>
 
-### 2. 插件信息配置
+## 📝 简介
 
-编辑 `info.json` 文件，修改以下字段：
+这是一个基于Google Gemini AI API的文字识别插件，为[pot-app](https://pot-app.com/)提供强大的文字识别功能。利用先进的AI模型，本插件能够提供准确、专业且自然流畅的多语言文字识别结果。
 
-- `id`：插件唯一 id，必须以`[plugin]`开头，例如 `[plugin].com.pot-app.ocrspace`
-- `display`: 插件显示名称，例如 `OCR Space`
-- `homepage`: 插件主页，填写你的仓库地址即可，例如 `https://github.com/pot-app/pot-app-recognize-plugin-template`
-- `icon`: 插件图标，填写当前目录下的图标名称，例如 `icon.png`
-- `needs`: 插件依赖，一个数组，每个依赖为一个对象，包含以下字段：
-  - `key`: 依赖 key，对应该项依赖在配置文件中的名称，例如 `apikey`
-  - `display`: 依赖显示名称，对应用户显示的名称，例如 `API Key`
-  - `type`: 组件类型 `input` | `select`
-  - `options`: 选项列表(仅 select 组件需要)，例如 `{"engine_a":"Engina A","engine_b":"Engina B"}`
-- `language`: 插件支持的语言映射，将 pot 的语言代码和插件发送请求时的语言代码一一对应
+## ✨ 功能特点
 
-### 3. 插件编写/编译
+- 💫 支持多种语言之间的精准文字识别
+- 🧠 采用Google最新的Gemini AI技术，文字识别质量卓越
+- 🔄 保留原文格式和语义，文字识别更加自然流畅
+- 🚀 专业术语准确文字识别，满足各领域专业需求
+- 📚 支持长文本文字识别，不受字符限制
 
-编辑 `main.js` 实现 `recognize` 函数
+## 🔧 前置要求
 
-#### Input parameters
+- [pot-app](https://pot-app.com/) - 请先下载并安装pot-app
+- Gemini API密钥 - 需要申请Google Gemini API密钥
 
-```javascript
-// config: config map
-// detect: detected source language
-// setResult: function to set result text
-// utils: some tools
-//     http: tauri http module
-//     readBinaryFile: function
-//     readTextFile: function
-//     Database: tauri Database class
-//     CryptoJS: CryptoJS module
-//     cacheDir: cache dir path
-//     pluginDir: current plugin dir 
-//     osType: "Windows_NT" | "Darwin" | "Linux"
-async function recognize(base64, lang, options) {
-  const { config, utils } = options;
-  const { http, readBinaryFile, readTextFile, Database, CryptoJS, run, cacheDir, pluginDir, osType } = utils;
-  const { fetch, Body } = http;
-}
-```
+## 📥 安装方法
 
-#### Return value
+1. 在pot-app中点击"偏好设置"
+2. 选择"服务设置"
+3. 点击"文字识别-添加外部插件"
+4. 选择本插件的发布包进行安装
 
-```javascript
-return "result";
-```
+## ⚙️ 配置说明
 
-### 4. 打包 pot 插件
+### 获取Gemini API密钥
 
-1. 将`main.js`文件和`info.json`以及图标文件压缩为 zip 文件。
+1. 访问[Google AI Studio](https://makersuite.google.com/app/apikey)
+2. 登录您的Google账号
+3. 点击"创建API密钥"按钮
+4. 复制生成的API密钥
 
-2. 将文件重命名为`<插件id>.potext`，例如`plugin.com.pot-app.ocrspace.potext`,即可得到 pot 需要的插件。
+### 在pot-app中配置密钥
 
-## 自动编译打包
+1. 打开pot-app，进入"偏好设置"
+2. 选择"服务设置"
+3. 点击添加外部插件
+3. 找到"Gemini文字识别"
+4. 输入您的API密钥并保存
 
-本仓库配置了 Github Actions，可以实现推送后自动编译打包插件。
+## 🔍 使用方法
 
-每次将仓库推送到 GitHub 之后 actions 会自动运行，将打包好的插件上传到 artifact，在 actions 页面可以下载
+1. 在pot-app中选择文本
+2. 从文字识别服务中选择"Gemini文字识别"
+3. 指定源语言和目标语言
+4. 获取高质量的文字识别结果
 
-每次提交 Tag 之后，actions 会自动运行，将打包好的插件上传到 release，在 release 页面可以下载打包好的插件
+## ⚠️ 注意事项
+
+- 请妥善保管您的API密钥，避免泄露
+- 文字识别服务需要联网使用
+- API调用可能有使用限制，请参考Google官方文档
+- 某些地区可能需要网络代理才能正常使用
+
+## 🤝 贡献指南
+
+欢迎提交Pull Request或Issue来帮助改进这个插件！
+
+## 📄 许可证
+
+[MIT License](LICENSE)

@@ -1,37 +1,95 @@
 {
-  "id": "plugin.com.pot-app.ocrspace",
+  "id": "plugin.coulsontl.recognize.gemini",
   "plugin_type": "recognize",
-  "icon": "icon.png",
-  "display": "OCR Space",
-  "homepage": "https://github.com/pot-app/pot-app-recognize-plugin-template",
+  "icon": "gemini.svg",
+  "display": "Gemini",
+  "homepage": "https://github.com/coulsontl/pot-app-recognize-plugin-gemini",
   "needs": [
     {
-      "key": "engine",
-      "display": "Engine",
-      "type": "select",
-      "options": { "1": "Engine 1", "2": "Engine 2", "3": "Engine 3" }
+      "key": "apiBaseUrl",
+      "display": "API Base URL",
+      "type": "input"
     },
-    { "key": "apikey", "display": "Api Key", "type": "input" }
+    {
+      "key": "apiKey",
+      "display": "API Key",
+      "type": "input"
+    },
+    {
+      "key": "useStream",
+      "display": "流式输出",
+      "type": "select",
+      "options": {
+        "true": "是 / Yes",
+        "false": "否 / No"
+      }
+    },
+    {
+      "key": "modelName",
+      "display": "模型选择",
+      "desc": "选择使用的Gemini模型",
+      "type": "select",
+      "options": {
+        "gemini-2.0-flash": "Gemini 2.0 Flash",
+        "gemini-2.5-pro-exp-03-25": "Gemini 2.5 Pro Exp 03-25",
+        "custom": "自定义模型"
+      }
+    },
+    {
+      "key": "customModelName",
+      "display": "自定义模型名称",
+      "type": "input",
+      "desc": "当选择\"自定义模型\"时，请在此处输入模型名称"
+    },
+    {
+      "key": "systemPrompt",
+      "display": "System Prompt",
+      "type": "input"
+    },
+    {
+      "key": "userPrompt",
+      "display": "User Prompt",
+      "type": "input"
+    },
+    {
+      "key": "temperature",
+      "display": "Temperature",
+      "desc": "设置模型的temperature参数(0-1之间)，越低越精确，越高越创意",
+      "type": "input"
+    },
+    {
+      "key": "topP",
+      "display": "Top P",
+      "desc": "设置模型的top_p参数(0-1之间)",
+      "type": "input"
+    }
   ],
   "language": {
-    "auto": "eng",
-    "zh_cn": "chs",
-    "zh_tw": "cht",
-    "en": "eng",
-    "ja": "jpn",
-    "ko": "kor",
-    "fr": "fre",
-    "es": "spa",
-    "ru": "rus",
-    "de": "ger",
-    "it": "ita",
-    "tr": "tur",
-    "pt_pt": "por",
-    "pt_br": "por",
-    "vi": "vie",
-    "th": "tai",
-    "ar": "ara",
-    "hi": "hin",
-    "fa": "per"
+    "auto": "auto",
+    "zh_cn": "zh",
+    "zh_tw": "zh_HANT",
+    "en": "en",
+    "ja": "ja",
+    "ko": "ko",
+    "fr": "fr",
+    "es": "es",
+    "ru": "ru",
+    "de": "de",
+    "it": "it",
+    "tr": "tr",
+    "pt_pt": "pt",
+    "pt_br": "pt",
+    "vi": "vi",
+    "id": "id",
+    "th": "th",
+    "ms": "ms",
+    "ar": "ar",
+    "hi": "hi",
+    "mn_cy": "mn",
+    "mn_mo": "mn",
+    "km": "km",
+    "nb_no": "no",
+    "nn_no": "no",
+    "fa": "fa"
   }
 }
