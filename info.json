@@ -31,6 +31,7 @@
       "type": "select",
       "options": {
         "gemini-2.0-flash": "Gemini 2.0 Flash",
+        "gemini-2.5-flash-preview-04-17": "Gemini 2.5 Flash Preview 04-17",
         "gemini-2.5-pro-exp-03-25": "Gemini 2.5 Pro Exp 03-25",
         "custom": "自定义模型"
       }
@@ -61,6 +62,11 @@
       "key": "topP",
       "display": "Top P",
       "desc": "设置模型的top_p参数(0-1之间)",
+      "type": "input"
+    },
+    {
+      "key": "requestArguments",
+      "display": "其他参数",
       "type": "input"
     }
   ],
