@@ -60,7 +60,16 @@ async function recognize(base64, lang, options) {
      // 处理其他参数配置
     if (requestArguments && requestArguments.trim() !== "") {
         try {
-            otherConfigs = JSON.parse(requestArguments)
+            const parsedArgs = JSON.parse(requestArguments);
+            // 优先使用requestArguments中的thinkingConfig
+            if (parsedArgs.thinkingConfig) {
+                otherConfigs = parsedArgs;
+            } else {
+                otherConfigs = {
+                    ...otherConfigs,
+                    ...parsedArgs
+                };
+            }
         } catch (e) {
             console.error(`Invalid requestArguments: ${e.message}`);
         }
