@@ -2,7 +2,7 @@ async function recognize(base64, lang, options) {
     const { config, utils } = options;
     // const { tauriFetch } = utils;
 
-    let { apiKey, modelName, customModelName, systemPrompt, userPrompt, requestArguments, useStream: use_stream = 'true', temperature = '0', topP = '0.95', apiBaseUrl = "https://generativelanguage.googleapis.com/v1beta" } = config;
+    let { apiKey, modelName, customModelName, systemPrompt, userPrompt, thinkingBudget, requestArguments, useStream: use_stream = 'true', temperature = '0', topP = '0.95', apiBaseUrl = "https://generativelanguage.googleapis.com/v1beta" } = config;
 
     if (!apiKey) {
         throw new Error("Please configure API Key first");
@@ -47,8 +47,17 @@ async function recognize(base64, lang, options) {
         "Content-Type": "application/json"
     };
 
-    // 处理其他参数配置
     let otherConfigs = {};
+     // 处理推理长度
+     if (thinkingBudget && thinkingBudget.trim() !== "") {
+         otherConfigs = {
+             thinkingConfig: {
+                 thinkingBudget: parseInt(thinkingBudget)
+             }
+         }
+     }
+ 
+     // 处理其他参数配置
     if (requestArguments && requestArguments.trim() !== "") {
         try {
             otherConfigs = JSON.parse(requestArguments)
@@ -89,7 +98,7 @@ async function recognize(base64, lang, options) {
         generationConfig: {
             temperature: parseFloat(temperature),
             topP: parseFloat(topP),
-            // 关闭思考：{"thinkingConfig":{"includeThoughts":false},"stopSequences":[]}
+            // https://ai.google.dev/gemini-api/docs/thinking?hl=zh-cn#javascript_1
             ...otherConfigs,
         }
     }

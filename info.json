@@ -65,6 +65,12 @@
       "type": "input"
     },
     {
+      "key": "thinkingBudget",
+      "display": "推理长度",
+      "desc": "为模型提供有关其思考过程中可使用的思考令牌数量的指导",
+      "type": "input"
+    },
+    {
       "key": "requestArguments",
       "display": "其他参数",
       "type": "input"
