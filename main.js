@@ -48,16 +48,16 @@ async function recognize(base64, lang, options) {
     };
 
     let otherConfigs = {};
-     // 处理推理长度
-     if (thinkingBudget && thinkingBudget.trim() !== "") {
-         otherConfigs = {
-             thinkingConfig: {
-                 thinkingBudget: parseInt(thinkingBudget)
-             }
-         }
-     }
- 
-     // 处理其他参数配置
+    // 处理推理长度
+    if (thinkingBudget && thinkingBudget.trim() !== "") {
+        otherConfigs = {
+            thinkingConfig: {
+                thinkingBudget: parseInt(thinkingBudget)
+            }
+        }
+    }
+
+    // 处理其他参数配置
     if (requestArguments && requestArguments.trim() !== "") {
         try {
             const parsedArgs = JSON.parse(requestArguments);
@@ -77,22 +77,11 @@ async function recognize(base64, lang, options) {
 
     const body = {
         safetySettings: [
-            {
-                category: "HARM_CATEGORY_HATE_SPEECH",
-                threshold: "BLOCK_NONE"
-            },
-            {
-                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-                threshold: "BLOCK_NONE"
-            },
-            {
-                category: "HARM_CATEGORY_HARASSMENT",
-                threshold: "BLOCK_NONE"
-            },
-            {
-                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-                threshold: "BLOCK_NONE"
-            }
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "OFF"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "OFF"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "OFF"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "OFF"},
+            {"category": "HARM_CATEGORY_CIVIC_INTEGRITY", "threshold": "BLOCK_NONE"}
         ],
         ...(systemPrompt ? { systemInstruction: { role: "system", parts: [{ text: systemPrompt }] } } : {}),
         contents: [
