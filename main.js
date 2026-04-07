@@ -89,7 +89,7 @@ async function recognize(base64, lang, options) {
                 role: "user",
                 parts: [
                     { text: userPrompt },
-                    { inline_data: { mime_type: "image/jpeg", data: base64 } }
+                    { inlineData: { mime_type: "image/jpeg", data: base64 } }
                 ]
             }
         ],
