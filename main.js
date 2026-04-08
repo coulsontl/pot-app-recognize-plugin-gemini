@@ -9,7 +9,6 @@ async function recognize(base64, lang, options) {
 
         const data = base64Data.trim().replace(/\s/g, "");
 
-        // 常见图片格式 magic header 的 base64 特征
         if (data.startsWith("/9j/")) return "image/jpeg";
         if (data.startsWith("iVBORw0KGgo")) return "image/png";
         if (data.startsWith("R0lGOD")) return "image/gif";
@@ -24,11 +23,10 @@ async function recognize(base64, lang, options) {
             throw new TypeError("base64Input 必须是非空字符串");
         }
 
-        let input = base64Input.trim().replace(/\s/g, "");
+        const input = base64Input.trim().replace(/\s/g, "");
 
-        // 如果传进来的是 data URL
+        // 支持 data URL 输入，但最终只保留纯 base64
         const dataUrlMatch = input.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-
         if (dataUrlMatch) {
             let [, mimeType, data] = dataUrlMatch;
 
@@ -37,23 +35,18 @@ async function recognize(base64, lang, options) {
             }
 
             return {
-                normalized: `data:${mimeType};base64,${data}`,
-                mime_type: mimeType,
+                mimeType,
                 data,
             };
         }
 
-        // 简单校验纯 base64
         const isBase64 = /^[A-Za-z0-9+/=]+$/.test(input);
         if (!isBase64) {
             throw new Error("输入不是合法的 base64 图片数据");
         }
 
-        const detectedMimeType = detectMimeTypeFromBase64(input) || defaultMimeType;
-
         return {
-            normalized: `data:${detectedMimeType};base64,${input}`,
-            mime_type: detectedMimeType,
+            mimeType: detectMimeTypeFromBase64(input) || defaultMimeType,
             data: input,
         };
     }
@@ -166,7 +159,7 @@ async function recognize(base64, lang, options) {
                     { text: userPrompt },
                     {
                         inlineData: {
-                            mime_type: imageData.mime_type,
+                            mimeType: imageData.mimeType,
                             data: imageData.data
                         }
                     }
@@ -193,9 +186,9 @@ async function recognize(base64, lang, options) {
             if (result.candidates && result.candidates.length > 0) {
                 const candidate = result.candidates[0];
                 if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                    const target = candidate.content.parts[0].text;
-                    if (target) {
-                        return target.trim();
+                    const targetPart = candidate.content.parts.find(part => typeof part.text === "string");
+                    if (targetPart?.text) {
+                        return targetPart.text.trim();
                     }
                 }
             }
@@ -213,7 +206,7 @@ async function recognize(base64, lang, options) {
                 if (!line) continue;
 
                 const trimmedLine = line.trim();
-                if (trimmedLine === "" || trimmedLine === "data: [DONE]") continue;
+                if (!trimmedLine || trimmedLine === "data: [DONE]") continue;
 
                 let jsonStr = trimmedLine;
                 if (trimmedLine.startsWith("data:")) {
@@ -230,17 +223,13 @@ async function recognize(base64, lang, options) {
                 if (parsedData.candidates && parsedData.candidates.length > 0) {
                     const candidate = parsedData.candidates[0];
 
-                    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                    if (candidate.content?.parts?.length > 0) {
                         for (const part of candidate.content.parts) {
-                            if (part.text) {
+                            if (typeof part.text === "string") {
                                 translatedText += part.text;
                             }
                         }
-                    } else if (
-                        candidate.delta &&
-                        candidate.delta.textDelta &&
-                        candidate.delta.textDelta.text
-                    ) {
+                    } else if (candidate.delta?.textDelta?.text) {
                         translatedText += candidate.delta.textDelta.text;
                     }
                 }
