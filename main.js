@@ -2,6 +2,23 @@ async function recognize(base64, lang, options) {
     const { config, utils } = options;
     // const { tauriFetch } = utils;
 
+    function detectMimeTypeFromBase64(base64Data) {
+        if (!base64Data || typeof base64Data !== "string") {
+            return "image/jpeg";
+        }
+
+        const data = base64Data.trim().replace(/\s/g, "");
+
+        // 常见图片格式 magic header 的 base64 特征
+        if (data.startsWith("/9j/")) return "image/jpeg";
+        if (data.startsWith("iVBORw0KGgo")) return "image/png";
+        if (data.startsWith("R0lGOD")) return "image/gif";
+        if (data.startsWith("UklGR")) return "image/webp";
+        if (data.startsWith("Qk")) return "image/bmp";
+
+        return "image/jpeg";
+    }
+
     function normalizeBase64Image(base64Input, defaultMimeType = "image/jpeg") {
         if (!base64Input || typeof base64Input !== "string") {
             throw new TypeError("base64Input 必须是非空字符串");
@@ -9,14 +26,12 @@ async function recognize(base64, lang, options) {
 
         let input = base64Input.trim().replace(/\s/g, "");
 
-        // 匹配 data URL，例如：
-        // data:image/jpeg;base64,xxxx
-        const dataUrlMatch = input.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/);
+        // 如果传进来的是 data URL
+        const dataUrlMatch = input.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
 
         if (dataUrlMatch) {
             let [, mimeType, data] = dataUrlMatch;
 
-            // 兼容 image/jpg
             if (mimeType === "image/jpg") {
                 mimeType = "image/jpeg";
             }
@@ -28,16 +43,17 @@ async function recognize(base64, lang, options) {
             };
         }
 
-        // 纯 base64 校验
+        // 简单校验纯 base64
         const isBase64 = /^[A-Za-z0-9+/=]+$/.test(input);
         if (!isBase64) {
             throw new Error("输入不是合法的 base64 图片数据");
         }
 
-        // 如果不是 data URL，则自动补默认前缀
+        const detectedMimeType = detectMimeTypeFromBase64(input) || defaultMimeType;
+
         return {
-            normalized: `data:${defaultMimeType};base64,${input}`,
-            mime_type: defaultMimeType,
+            normalized: `data:${detectedMimeType};base64,${input}`,
+            mime_type: detectedMimeType,
             data: input,
         };
     }
@@ -70,7 +86,6 @@ async function recognize(base64, lang, options) {
 
     const useStream = use_stream !== "false";
 
-    // 处理模型选择
     let model = modelName || "gemini-2.5-flash";
     if (modelName === "custom") {
         model = customModelName || "gemini-2.5-flash";
@@ -80,18 +95,15 @@ async function recognize(base64, lang, options) {
         `${apiBaseUrl}/models/${model}:${useStream ? "streamGenerateContent" : "generateContent"}?key=${apiKey}`
     );
 
-    // 构建系统提示词
     systemPrompt = (!systemPrompt || systemPrompt.trim() === "") ? undefined : systemPrompt;
     if (systemPrompt) {
         systemPrompt = systemPrompt.replace(/\$lang/g, lang);
     }
 
-    // 如果用户提示词为空，使用默认提示词
     if (!userPrompt || userPrompt.trim() === "") {
         userPrompt = "Just recognize the text in the image. Do not offer unnecessary explanations.";
     }
 
-    // 替换用户提示词中的变量
     userPrompt = userPrompt.replace(/\$lang/g, lang);
 
     const headers = useStream
@@ -105,7 +117,6 @@ async function recognize(base64, lang, options) {
 
     let otherConfigs = {};
 
-    // 处理推理长度
     if (thinkingBudget && String(thinkingBudget).trim() !== "") {
         otherConfigs = {
             thinkingConfig: {
@@ -114,12 +125,9 @@ async function recognize(base64, lang, options) {
         };
     }
 
-    // 处理其他参数配置
     if (requestArguments && requestArguments.trim() !== "") {
         try {
             const parsedArgs = JSON.parse(requestArguments);
-
-            // 优先使用 requestArguments 中的 thinkingConfig
             if (parsedArgs.thinkingConfig) {
                 otherConfigs = parsedArgs;
             } else {
@@ -133,8 +141,7 @@ async function recognize(base64, lang, options) {
         }
     }
 
-    // 规范化图片 base64
-    const imageData = normalizeBase64Image(base64, "image/jpeg");
+    const imageData = normalizeBase64Image(base64);
 
     const body = {
         safetySettings: [
@@ -169,13 +176,9 @@ async function recognize(base64, lang, options) {
         generationConfig: {
             temperature: parseFloat(temperature),
             topP: parseFloat(topP),
-            // https://ai.google.dev/gemini-api/docs/thinking?hl=zh-cn#javascript_1
             ...otherConfigs,
         }
     };
-
-    // return apiUrl.href;
-    // return JSON.stringify(body);
 
     const res = await window.fetch(apiUrl.href, {
         method: "POST",
@@ -184,7 +187,6 @@ async function recognize(base64, lang, options) {
     });
 
     if (res.ok) {
-        // 非流式输出
         if (!useStream) {
             const result = await res.json();
 
@@ -201,7 +203,6 @@ async function recognize(base64, lang, options) {
             throw new Error(`无法解析Gemini API的响应: ${JSON.stringify(result)}`);
         }
 
-        // 流式输出
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let translatedText = "";
@@ -214,9 +215,9 @@ async function recognize(base64, lang, options) {
                 const trimmedLine = line.trim();
                 if (trimmedLine === "" || trimmedLine === "data: [DONE]") continue;
 
-                let jsonStr = line;
-                if (line.startsWith("data:")) {
-                    jsonStr = line.substring(5).trim();
+                let jsonStr = trimmedLine;
+                if (trimmedLine.startsWith("data:")) {
+                    jsonStr = trimmedLine.slice(5).trim();
                 }
 
                 let parsedData;
@@ -230,9 +231,10 @@ async function recognize(base64, lang, options) {
                     const candidate = parsedData.candidates[0];
 
                     if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
-                        const textPart = candidate.content.parts[0].text;
-                        if (textPart) {
-                            translatedText += textPart;
+                        for (const part of candidate.content.parts) {
+                            if (part.text) {
+                                translatedText += part.text;
+                            }
                         }
                     } else if (
                         candidate.delta &&
@@ -265,8 +267,7 @@ async function recognize(base64, lang, options) {
             }
 
             if (buffer) {
-                const lines = buffer.split("\n");
-                processLines(lines);
+                processLines(buffer.split("\n"));
             }
 
             return translatedText;
